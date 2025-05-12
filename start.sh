@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Install Chromium dependencies
-playwright install --with-deps chromium
+# Exit immediately if a command exits with a non-zero status
+set -e
 
-# Run your script
+echo "✅ Installing Playwright browsers..."
+playwright install --with-deps
+
+echo "🚀 Running main.py..."
 python main.py
