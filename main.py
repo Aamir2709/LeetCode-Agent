@@ -1,7 +1,8 @@
 import asyncio
 from playwright.async_api import async_playwright
-from prompt import get_hint_from_huggingface
+from prompt import get_hint_from_groq
 from email_sender import send_email, clean_html
+
 
 async def get_leetcode_potd():
     query = {
@@ -32,7 +33,7 @@ async def get_leetcode_potd():
                 }
               }
             }
-        """
+        """,
     }
 
     async with async_playwright() as p:
@@ -41,10 +42,13 @@ async def get_leetcode_potd():
         page = await context.new_page()
 
         # Go to any page to initialize the browser session
-        await page.goto("https://leetcode.com/problemset/all/", wait_until="domcontentloaded")
+        await page.goto(
+            "https://leetcode.com/problemset/all/", wait_until="domcontentloaded"
+        )
 
         # Send the GraphQL request using browser context
-        response = await page.evaluate("""
+        response = await page.evaluate(
+            """
         async (query) => {
             const res = await fetch("https://leetcode.com/graphql", {
                 method: "POST",
@@ -55,7 +59,9 @@ async def get_leetcode_potd():
             });
             return res.ok ? await res.json() : { error: res.status };
         }
-        """, query)
+        """,
+            query,
+        )
 
         await browser.close()
 
@@ -91,16 +97,21 @@ async def get_problem_description(title_slug):
             }
           }
         }
-        """
+        """,
     }
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()
         page = await context.new_page()
-        await page.goto(f"https://leetcode.com/problems/{title_slug}/", wait_until="domcontentloaded", timeout=10000)
+        await page.goto(
+            f"https://leetcode.com/problems/{title_slug}/",
+            wait_until="domcontentloaded",
+            timeout=10000,
+        )
 
-        response = await page.evaluate("""
+        response = await page.evaluate(
+            """
         async (query) => {
             const res = await fetch("https://leetcode.com/graphql", {
                 method: "POST",
@@ -111,7 +122,9 @@ async def get_problem_description(title_slug):
             });
             return res.ok ? await res.json() : {error: res.status};
         }
-        """, query)
+        """,
+            query,
+        )
 
         await browser.close()
 
@@ -127,13 +140,14 @@ async def get_problem_description(title_slug):
 async def main():
     # Get the problem of the day and its titleSlug
     title_slug = await get_leetcode_potd()
-    
+
     if title_slug:
         print(f"\nFetching detailed information for the problem: {title_slug}...\n")
         problem = await get_problem_description(title_slug)
         if problem:
-            hint = get_hint_from_huggingface(title_slug, clean_html(problem["content"]))
+            hint = get_hint_from_groq(title_slug, clean_html(problem["content"]))
             send_email(problem, hint, recipient_email="aamirbaugwala@gmail.com")
+
 
 # Run the entire flow
 asyncio.run(main())
