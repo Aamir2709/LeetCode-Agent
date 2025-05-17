@@ -10,13 +10,13 @@ def get_hint_from_groq(problem_title, problem_description):
     prompt = (
         f"Problem Title: {problem_title}\n\n"
         f"Problem Description:\n{problem_description[:5000]}...\n\n"
-        f"Please provide a motivational message and a useful hint to solve the above problem."
+        f"Please provide a useful hint to solve the above problem but dont give me the whole solution and be precise with minimum words."
     )
     response = client.chat.completions.create(
         model="deepseek-r1-distill-llama-70b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
-        max_tokens=500,
+        max_tokens=400,
         top_p=0.95,
     )
 
