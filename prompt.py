@@ -16,7 +16,7 @@ def get_hint_from_groq(problem_title, problem_description):
         model="deepseek-r1-distill-llama-70b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
-        max_tokens=300,
+        max_tokens=500,
         top_p=0.95,
     )
 
